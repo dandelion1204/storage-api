@@ -43,7 +43,8 @@ class Product(models.Model):
     item_num = models.CharField(max_length=255, unique=True)
     quantity = models.DecimalField(default=0, max_digits=5, decimal_places=0)
     description = models.TextField(blank=True)
-    ingredients = models.ManyToManyField('Ingredient', through='ProductIngredients')
+    ingredients = models.ManyToManyField('Ingredient',
+                                         through='ProductIngredients')
 
     def __str__(self):
         return self.title
@@ -64,11 +65,11 @@ class Ingredient(models.Model):
 
 class ProductIngredients(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
+    ingredient = models.ForeignKey('Ingredient', on_delete=models.CASCADE)
     quantity = models.DecimalField(max_digits=6, decimal_places=0, validators=[MinValueValidator(0)])
     unit = models.CharField(max_length=50)
 
     def __str__(self):
-        return self.product
+        return f"{self.ingredient.name}: {self.quantity} {self.unit}"
 
 

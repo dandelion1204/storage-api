@@ -1,0 +1,61 @@
+<!-- templates/products/product_list.html -->
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Product List</h2>
+    <div id="productList" class="row">
+        <!-- Products will be displayed here -->
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get the token from wherever you store it (e.g., cookie, localStorage)
+    const token = localStorage.getItem('token'); // 請替換成實際的 token 獲取方式
+    console.log('token',token)
+    // Fetch products from API
+    fetch('/api/product/products/', {
+        headers: {
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(products => {
+        const productList = document.getElementById('productList');
+        products.forEach(product => {
+            const productCard = document.createElement('div');
+            productCard.className = 'col-md-4 mb-4';
+            productCard.innerHTML = `
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">${product.title}</h5>
+                        <p class="card-text">ItemNumber: ${product.item_num}</p>
+                        <p class="card-text">Quantity: ${product.quantity}</p>
+                        <button class="btn btn-primary" onclick="viewDetails(${product.id})">
+                            View Details
+                        </button>
+                    </div>
+                </div>
+            `;
+            productList.appendChild(productCard);
+        });
+    })
+    .catch(error => {
+        console.error('Error fetching products:', error);
+        const productList = document.getElementById('productList');
+        productList.innerHTML = '<div class="alert alert-danger">Error loading products. Please Login first</div>';
+    });
+});
+
+function viewDetails(productId) {
+    // 處理查看詳情的邏輯
+    window.location.href = `/products/${productId}/`;
+}
+</script>
+{% endblock %}

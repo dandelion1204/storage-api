@@ -6,7 +6,7 @@ from rest_framework import status
 
 CREATE_USER_URL = reverse('user:create')
 TOKEN_URL = reverse('user:token')
-LOGIN_URL = reverse('user:login')
+LOGIN_URL = reverse('user:manage-user')
 
 
 def create_user(**params):

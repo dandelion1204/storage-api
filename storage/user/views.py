@@ -1,12 +1,15 @@
 from rest_framework import generics, authentication, permissions
 from rest_framework.authtoken.views import ObtainAuthToken
-#from rest_framework.settings import api_settings
 from user.serializers import UserSerializer,AuthTokenSerializer
+from django.shortcuts import render
+
+
+def login_page(request):
+    return render(request, 'user/login.html')
 
 
 class CreateUSerView(generics.CreateAPIView):
     serializer_class = UserSerializer
-
 
 class CreateTokenView(ObtainAuthToken):
     serializer_class = AuthTokenSerializer

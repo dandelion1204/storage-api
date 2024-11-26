@@ -5,7 +5,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 from core.models import Product, Ingredient
-from product.serializers import IngredientSerializer #IngredientDetailSerializer
+from product.serializers import IngredientSerializer, IngredientDetailSerializer
 
 INGREDIENT_URL = reverse('product:ingredient-list')
 
@@ -81,5 +81,27 @@ class PrivateIngredientAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Ingredient.objects.filter(id=ingredient.id).exists())
 
+    def test_create_ingredient(self):
+        payload = {
+            'name': 'A',
+            'item_num': 'I0010',
+            'quantity': Decimal('102'),
+            'lot': 'S1403001',
+            'supplier': 'Banana Inc.'
+        }
 
+        res = self.client.post(INGREDIENT_URL, payload)
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        ingredient = Ingredient.objects.get(item_num='I0010')
+        for i, j in payload.items():
+            self.assertEqual(getattr(ingredient,i), j)
+
+    def test_retrieve_ingredient_detail(self):
+        ingredient = create_ingredient(item_num='I0001', name='A')
+        url = detail_url(ingredient.id)
+        res = self.client.get(url)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        serializer = IngredientDetailSerializer(ingredient)
+        self.assertEqual(res.data, serializer.data)
 

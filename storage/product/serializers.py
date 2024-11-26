@@ -1,19 +1,27 @@
 from rest_framework import serializers
-from core.models import Product, Ingredient
+from core.models import Product, Ingredient, ProductIngredients
+
+
+class ProductIngredientSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ProductIngredients
+        fields = ['id', 'product', 'ingredient', 'quantity', 'unit']
 
 
 class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id','title','item_num','quantity']
+        fields = ['id','title','item_num','quantity',]
         read_only_fields = ['id']
 
 
 class ProductDetailSerializer(ProductSerializer):
+    ingredients = ProductIngredientSerializer(source='productingredients_set', many=True, required=False)
 
     class Meta(ProductSerializer.Meta):
-        fields = ProductSerializer.Meta.fields + ['description']
+        fields = ProductSerializer.Meta.fields + ['description', 'ingredients']
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -26,7 +34,10 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 class IngredientDetailSerializer(IngredientSerializer):
 
-    class Meta(IngredientSerializer):
+    class Meta(IngredientSerializer.Meta):
         fields = IngredientSerializer.Meta.fields + ['lot', 'supplier']
+
+
+
 
 

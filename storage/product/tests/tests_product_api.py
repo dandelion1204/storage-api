@@ -4,8 +4,12 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
-from core.models import Product, Ingredient
-from product.serializers import ProductSerializer, ProductDetailSerializer
+from core.models import Product, Ingredient, ProductIngredients
+from product.serializers import (
+            ProductSerializer,
+            ProductDetailSerializer,
+            ProductIngredientSerializer,
+            )
 
 
 PRODUCT_URL = reverse('product:product-list')
@@ -120,7 +124,6 @@ class PrivateProductAPITests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         product.refresh_from_db()
-
         for i,j in payload.items():
             self.assertEqual(getattr(product,i),j)
 
@@ -137,7 +140,7 @@ class PrivateProductAPITests(TestCase):
         self.assertFalse(Product.objects.filter(id=product.id).exists())
 
     def test_create_duplicate_item_num_error(self):
-        product = create_product(
+        create_product(
             title='Apple Watch',
             item_num='P001',
         )
@@ -148,5 +151,65 @@ class PrivateProductAPITests(TestCase):
 
         res = self.client.post(PRODUCT_URL, payload)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_dproduct_ingredient_qiantity(self):
+        product = create_product(
+            title='Apple Watch',
+            item_num='P001',
+        )
+
+        product2 = create_product(
+            title='Apple Pencil',
+            item_num='P002',
+        )
+
+        ingredient1 = Ingredient.objects.create(
+            name = 'A',
+            item_num = 'I0001',
+            quantity = Decimal('100')
+        )
+        ingredient2 = Ingredient.objects.create(
+            name = 'B',
+            item_num = 'I0002',
+            quantity = Decimal('100')
+        )
+        ingredient3 = Ingredient.objects.create(
+            name = 'C',
+            item_num = 'I0003',
+            quantity = Decimal('100')
+        )
+
+        ProductIngredients.objects.create(
+            product = product,
+            ingredient = ingredient1,
+            quantity = Decimal('100')
+        )
+
+        ProductIngredients.objects.create(
+            product = product,
+            ingredient = ingredient2,
+            quantity = Decimal('200')
+        )
+
+        ProductIngredients.objects.create(
+            product = product,
+            ingredient = ingredient3,
+            quantity = Decimal('300')
+        )
+
+        ProductIngredients.objects.create(
+            product = product2,
+            ingredient = ingredient1,
+            quantity = Decimal('400')
+        )
+
+        url = detail_url(product.id)
+        res = self.client.get(url)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        serializer = ProductDetailSerializer(product)
+        self.assertEqual(res.data, serializer.data)
+        for ingredient in res.data['ingredients']:
+            self.assertNotEqual(ingredient['product'], product2.id)
 
 
