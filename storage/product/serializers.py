@@ -3,10 +3,11 @@ from core.models import Product, Ingredient, ProductIngredients
 
 
 class ProductIngredientSerializer(serializers.ModelSerializer):
+    ingredient_name = serializers.CharField(source='ingredient.name', read_only=True)
 
     class Meta:
         model = ProductIngredients
-        fields = ['id', 'product', 'ingredient', 'quantity', 'unit']
+        fields = ['id', 'product', 'ingredient', 'ingredient_name', 'quantity', 'unit']
 
 
 class ProductSerializer(serializers.ModelSerializer):

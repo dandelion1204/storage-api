@@ -1,0 +1,85 @@
+<!-- templates/products/product_detail.html -->
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div id="productDetail">
+        <!-- Product details will be loaded here -->
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const productId = {{ product_id }};
+    const token = localStorage.getItem('token');
+
+    fetch(`/api/product/products/${productId}/`, {
+        headers: {
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(product => {
+        const productDetail = document.getElementById('productDetail');
+
+        // 生成食材列表的 HTML
+        const ingredientsHTML = product.ingredients.length > 0
+            ? `
+                <div class="card-body">
+                    <h4>Ingredients/Components</h4>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Ingredient</th>
+                                <th>Quantity</th>
+                                <th>Unit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${product.ingredients.map(ingredient => `
+                                <tr>
+                                    <td>${ingredient.ingredient_name || ingredient.ingredient}</td>
+                                    <td>${ingredient.quantity}</td>
+                                    <td>${ingredient.unit}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+              `
+            : '<p class="card-text text-muted">No ingredients listed</p>';
+
+        productDetail.innerHTML = `
+            <div class="card">
+                <div class="card-header">
+                    <h2>${product.title}</h2>
+                    <small class="text-muted">Item Number: ${product.item_num}</small>
+                </div>
+                <div class="card-body">
+                    <p><strong>Quantity:</strong> ${product.quantity}</p>
+                    <p><strong>Description:</strong> ${product.description}</p>
+                </div>
+                ${ingredientsHTML}
+                <div class="card-footer">
+                    <a href="/products/" class="btn btn-secondary">Back to List</a>
+                </div>
+            </div>
+        `;
+    })
+    .catch(error => {
+        console.error('Error fetching product details:', error);
+        const productDetail = document.getElementById('productDetail');
+        productDetail.innerHTML = `
+            <div class="alert alert-danger">
+                Error loading product details: ${error.message}
+            </div>
+        `;
+    });
+});
+</script>
+{% endblock %}

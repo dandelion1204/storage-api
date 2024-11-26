@@ -32,4 +32,5 @@ urlpatterns = [
     path('', core_views.home, name='home'),
     path('products/', product_view.product_list, name='product_list'),
     path('login/', user_view.login_page, name='login'),
+    path('products/<int:pk>/', product_view.product_detail, name='product_detail'),
 ]
