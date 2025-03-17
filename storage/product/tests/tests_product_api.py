@@ -12,6 +12,7 @@ from product.serializers import (
             )
 
 
+
 PRODUCT_URL = reverse('product:product-list')
 
 def detail_url(product_id):
@@ -134,6 +135,7 @@ class PrivateProductAPITests(TestCase):
         )
 
         url = detail_url(product.id)
+        print('url=',url)
         res = self.client.delete(url)
 
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
@@ -152,7 +154,7 @@ class PrivateProductAPITests(TestCase):
         res = self.client.post(PRODUCT_URL, payload)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_dproduct_ingredient_qiantity(self):
+    def test_product_ingredient_qiantity(self):
         product = create_product(
             title='Apple Watch',
             item_num='P001',
@@ -212,4 +214,81 @@ class PrivateProductAPITests(TestCase):
         for ingredient in res.data['ingredients']:
             self.assertNotEqual(ingredient['product'], product2.id)
 
+    def test_product_ingredient_update(self):
+        product = create_product(
+            title='Apple TV',
+            item_num='P020',
+        )
 
+        ingredient1 = Ingredient.objects.create(
+            name = 'A',
+            item_num = 'I0001',
+            quantity = Decimal('100')
+        )
+        ingredient2 = Ingredient.objects.create(
+            name = 'B',
+            item_num = 'I0002',
+            quantity = Decimal('100')
+        )
+        ingredient3 = Ingredient.objects.create(
+            name = 'C',
+            item_num = 'I0003',
+            quantity = Decimal('100')
+        )
+
+        ProductIngredients.objects.create(
+            product = product,
+            ingredient = ingredient1,
+            quantity = Decimal('100')
+        )
+
+        ProductIngredients.objects.create(
+            product = product,
+            ingredient = ingredient2,
+            quantity = Decimal('200')
+        )
+
+        payload = {
+            "title": "Apple TV",
+            "item_num": "P020",
+            "ingredients": [
+            {
+                "product": product.id,
+                "ingredient": ingredient3.id,
+                "quantity": "5",
+                "unit": "set"
+            },
+            {
+                "product": product.id,
+                "ingredient": ingredient1.id,
+                "quantity": "0",
+                "unit": "set"
+            }
+            ]
+        }
+
+        url = detail_url(product.id)
+        res = self.client.put(url, payload)
+
+        if res.status_code != 200:
+            print("Response Status Code:", res.status_code)
+            print("Response Content:", res.content)
+            print("Response JSON:", res.json())
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        product.refresh_from_db()
+
+        # 驗證 ingredient1 的關聯已被刪除
+        remaining_ingredients = ProductIngredients.objects.filter(product=product)
+
+        # 確認只剩下 ingredient3 的關聯
+        self.assertEqual(remaining_ingredients.count(), 1)
+        self.assertEqual(remaining_ingredients.first().ingredient, ingredient3)
+
+        # 驗證 ingredient3 的數量
+        self.assertEqual(remaining_ingredients.first().quantity, Decimal('5'))
+
+        # 可選：驗證回傳的 ingredients 中不包含 ingredient1
+        #ingredients_in_response = res.data.get('ingredients', [])
+        #ingredient_ids = [ing['ingredient'] for ing in ingredients_in_response]
+        #self.assertNotIn(ingredient1.id, ingredient_ids)

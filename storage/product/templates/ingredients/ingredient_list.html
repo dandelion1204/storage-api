@@ -1,0 +1,61 @@
+<!-- templates/ingredients/ingredient_list.html -->
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Ingredient List</h2>
+    <div id="ingredientList" class="row">
+        <!-- Ingredients will be displayed here -->
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get the token from wherever you store it (e.g., cookie, localStorage)
+    const token = localStorage.getItem('token'); // 請替換成實際的 token 獲取方式
+    console.log('token',token)
+    // Fetch ingredients from API
+    fetch('/api/product/ingredients/', {
+        headers: {
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(ingredients => {
+        const ingredientList = document.getElementById('ingredientList');
+        ingredients.forEach(ingredient => {
+            const ingredientCard = document.createElement('div');
+            ingredientCard.className = 'col-md-4 mb-4';
+            ingredientCard.innerHTML = `
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">${ingredient.name}</h5>
+                        <p class="card-text">ItemNumber: ${ingredient.item_num}</p>
+                        <p class="card-text">Quantity: ${ingredient.quantity}</p>
+                        <button class="btn btn-primary" onclick="viewDetails(${ingredient.id})">
+                            View Details
+                        </button>
+                    </div>
+                </div>
+            `;
+            ingredientList.appendChild(ingredientCard);
+        });
+    })
+    .catch(error => {
+        console.error('Error fetching ingredients:', error);
+        const ingredientList = document.getElementById('ingredientList');
+        ingredientList.innerHTML = '<div class="alert alert-danger">Error loading ingredients. Please Login first</div>';
+    });
+});
+
+function viewDetails(ingredientId) {
+    // 處理查看詳情的邏輯
+    window.location.href = `/ingredients/${ingredientId}/`;
+}
+</script>
+{% endblock %}

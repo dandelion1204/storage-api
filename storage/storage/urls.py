@@ -30,7 +30,11 @@ urlpatterns = [
     path('api/user/', include('user.urls')),
     path('api/product/', include('product.urls')),
     path('', core_views.home, name='home'),
-    path('products/', product_view.product_list, name='product_list'),
     path('login/', user_view.login_page, name='login'),
+    path('products/', product_view.product_list, name='product_list'),
+    path('products/add_product', product_view.add_product, name='add_product'),
     path('products/<int:pk>/', product_view.product_detail, name='product_detail'),
+    path('ingredients/', product_view.ingredient_list, name='ingredient_list'),
+    path('ingredients/<int:pk>/', product_view.ingredient_detail, name='ingredient_detail'),
+    path('products/<int:pk>/adjust-ingredient/', product_view.product_ingredient_adjust, name='adjust_ingredient'),
 ]

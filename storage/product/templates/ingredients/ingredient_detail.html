@@ -1,0 +1,142 @@
+<!-- templates/products/ingredient_detail.html -->
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div id="ingredientDetail">
+        <!-- Ingredient details will be loaded here -->
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ingredientId = {{ ingredient_id }};
+    const token = localStorage.getItem('token'); // 使用 Django 模板直接獲取 token
+
+    fetch(`/api/product/ingredients/${ingredientId}/`, {
+        headers: {
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(ingredient => {
+        const ingredientDetail = document.getElementById('ingredientDetail');
+
+        ingredientDetail.innerHTML = `
+            <div class="card">
+                <div class="card-header">
+                    <h2>${ingredient.name}</h2>
+                    <small class="text-muted">Item Number: ${ingredient.item_num}</small>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4>Basic Information</h4>
+                            <table class="table">
+                                <tr>
+                                    <th>Quantity</th>
+                                    <td>${ingredient.quantity}</td>
+                                </tr>
+                                <tr>
+                                    <th>Lot Number</th>
+                                    <td>${ingredient.lot}</td>
+                                </tr>
+                                <tr>
+                                    <th>Supplier</th>
+                                    <td>${ingredient.supplier}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h4>Related Products</h4>
+                            <div id="relatedProducts">
+                                <!-- Related products will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="/ingredients/" class="btn btn-secondary me-2">Back to Ingredients List</a>
+                    <button onclick="fetchRelatedProducts(${ingredientId})" class="btn btn-primary">
+                        Load Related Products
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // 自動載入相關產品
+        fetchRelatedProducts(ingredientId);
+    })
+    .catch(error => {
+        console.error('Error fetching ingredient details:', error);
+        const ingredientDetail = document.getElementById('ingredientDetail');
+        ingredientDetail.innerHTML = `
+            <div class="alert alert-danger">
+                Error loading ingredient details: ${error.message}
+            </div>
+        `;
+    });
+
+    // 獲取相關產品的函數
+    function fetchRelatedProducts(ingredientId) {
+        const token = '{{ request.user.auth_token.key }}';
+        const relatedProductsDiv = document.getElementById('relatedProducts');
+
+        // 清空並顯示載入中
+        relatedProductsDiv.innerHTML = `
+            <div class="text-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p>Loading related products...</p>
+            </div>
+        `;
+
+        fetch(`/api/product/ingredients/${ingredientId}/related-products/`, {
+            headers: {
+                'Authorization': `Token ${token}`,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(products => {
+            if (products.length > 0) {
+                const productsHTML = products.map(product => `
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a href="/products/${product.id}/">${product.title}</a>
+                            </h5>
+                            <p class="card-text">
+                                <small class="text-muted">Item Number: ${product.item_num}</small>
+                            </p>
+                        </div>
+                    </div>
+                `).join('');
+                relatedProductsDiv.innerHTML = productsHTML;
+            } else {
+                relatedProductsDiv.innerHTML = '<p class="text-muted">No related products found</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching related products:', error);
+            relatedProductsDiv.innerHTML = `
+                <div class="alert alert-warning">
+                    Unable to load related products: ${error.message}
+                </div>
+            `;
+        });
+    }
+});
+</script>
+{% endblock %}

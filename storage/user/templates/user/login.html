@@ -1,12 +1,14 @@
 {% extends 'base.html' %}
 
     {% block head-script %}
+    {% csrf_token %}
     <script>
         async function handleLogin(event) {
             event.preventDefault();
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
             try {
                 // 使用 CreateTokenView 取得 token
@@ -14,6 +16,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
                     },
                     body: JSON.stringify({
                         email: email,
