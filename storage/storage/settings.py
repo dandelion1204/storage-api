@@ -24,9 +24,13 @@ TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
 SECRET_KEY = 'django-insecure-!jve%kvhx-g22*i)oo-4uxlb(fc=m9a)4*47#eh=hm!)r#g60$'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+# BEFORE ADD NGINX
 DEBUG = True
+ALLOWED_HOSTS = ['3.104.30.225','127.0.0.1']
 
-ALLOWED_HOSTS = ['54.252.230.168']
+# ADD NGINX MODIFY
+#DEBUG = os.getenv("DEBUG", "False") == "True"
+#ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(",")
 
 
 # Application definition
@@ -85,8 +89,10 @@ WSGI_APPLICATION = 'storage.wsgi.application'
 
 DATABASES = {
     'default': {
+#        'ENGINE': 'django.db.backends.sqlite3',
+#        'NAME': BASE_DIR / 'db.sqlite3',
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': '/app/db/db.sqlite3',  # ⬅ SQLite 資料存放在 Volume
     }
 }
 
@@ -128,10 +134,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static'),]
 
-print(STATIC_URL)
-print(STATICFILES_DIRS)
+
+#print(STATIC_URL)
+#print(STATICFILES_DIRS)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

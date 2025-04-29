@@ -1,0 +1,36 @@
+services:
+  web:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dandelion1204/storage-web:latest
+    container_name: django_app
+    restart: always
+    volumes:
+      - static_volume:/app/staticfiles          # 注意！這是 STATIC_ROOT 的目錄
+      - ./static:/app/static                    # 這是你原始碼裡手動放的 static（可選）
+      - sqlite_data:/app/db
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    command: /bin/sh -c "python manage.py migrate --noinput && \
+                      python manage.py collectstatic --noinput && \
+                      gunicorn storage.wsgi:application --bind 0.0.0.0:8000"
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx_proxy
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - static_volume:/app/staticfiles         # Nginx 要 serve 這個目錄
+    depends_on:
+      - web
+
+volumes:
+  static_volume:
+  sqlite_data:

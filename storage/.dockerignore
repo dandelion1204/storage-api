@@ -1,6 +1,7 @@
-venv/
 __pycache__/
-.git/
 *.pyc
 *.pyo
-db.sqlite3
+.env
+venv/
+.git/
+db.sqlite3  # 忽略本機的 SQLite 檔案
