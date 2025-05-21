@@ -41,26 +41,35 @@ class User(AbstractBaseUser,PermissionsMixin):
 class Product(models.Model):
     title = models.CharField(max_length=255)
     item_num = models.CharField(max_length=255, unique=True)
-    quantity = models.DecimalField(default=0, max_digits=5, decimal_places=0)
     description = models.TextField(blank=True)
-    ingredients = models.ManyToManyField('Ingredient',
-                                         through='ProductIngredients')
+    ingredients = models.ManyToManyField(   'Ingredient',
+                                            through='ProductIngredients')
 
     def __str__(self):
         return self.title
 
+class ProductLot(models.Model):
+    product = models.ForeignKey(    Product,
+                                    on_delete=models.CASCADE,
+                                    related_name='lots')
+    lot = models.CharField(max_length=100, unique=True)
+    quantity = models.IntegerField()
+
+
 class Ingredient(models.Model):
     name = models.CharField(max_length=255)
     item_num = models.CharField(max_length=255, unique=True)
-    quantity = models.DecimalField(default=0,
-                                 max_digits=5,
-                                 decimal_places=0,
-                                 validators=[MinValueValidator(0)],)
-    lot = models.CharField(max_length=255)
-    supplier = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
+
+class IngredientLot(models.Model):
+    ingredient = models.ForeignKey( Ingredient,
+                                    on_delete=models.CASCADE,
+                                    related_name='lots')
+    lot = models.CharField(max_length=100, unique=True)
+    quantity = models.IntegerField()
+    supplier = models.CharField(max_length=255)
 
 
 class ProductIngredients(models.Model):

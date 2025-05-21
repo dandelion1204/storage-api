@@ -3,6 +3,10 @@
 {% block content %}
 <div class="container mt-4">
     <h2>Ingredient List</h2>
+
+    <!-- 新增 ingredient 的按鈕 -->
+    <button class="btn btn-success mb-4" onclick="window.location.href='{% url 'add_ingredient' %}'">Add Ingredient</button>
+
     <div id="ingredientList" class="row">
         <!-- Ingredients will be displayed here -->
     </div>
@@ -36,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="card-body">
                         <h5 class="card-title">${ingredient.name}</h5>
                         <p class="card-text">ItemNumber: ${ingredient.item_num}</p>
-                        <p class="card-text">Quantity: ${ingredient.quantity}</p>
+                        <p class="card-text">Quantity: ${ingredient.total_quantity }</p>
                         <button class="btn btn-primary" onclick="viewDetails(${ingredient.id})">
                             View Details
                         </button>

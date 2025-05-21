@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block head-script %}
+    {% csrf_token %}
+    <script>
+        async function handleRegister(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            try {
+                // 發送註冊請求
+                const registerResponse = await fetch('/api/user/create/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        email: email,
+                        password: password
+                    })
+                });
+
+                if (!registerResponse.ok) {
+                    const errorData = await registerResponse.json();
+                    throw new Error(errorData.detail || '註冊失敗');
+                }
+
+                // 註冊成功後自動登入
+                const loginResponse = await fetch('/api/user/token/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
+
+                if (!loginResponse.ok) {
+                    throw new Error('登入失敗');
+                }
+
+                const loginData = await loginResponse.json();
+                const token = loginData.token;
+                localStorage.setItem('token', token);
+
+                // 取得用戶資料（非必要，但可用）
+                const userResponse = await fetch('/api/user/me/', {
+                    headers: {
+                        'Authorization': `Token ${token}`
+                    }
+                });
+
+                const userData = await userResponse.json();
+                localStorage.setItem('user', JSON.stringify(userData));
+
+                // 導向首頁
+                window.location.href = '/';
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+    </script>
+{% endblock %}
+
+{% block content %}
+<h1>Register</h1>
+<form onsubmit="handleRegister(event)" method="post">
+    {% csrf_token %}
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" required>
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" required>
+
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" required>
+
+    <button type="submit">註冊</button>
+</form>
+<p>已經有帳號了？<a href="/login">登入</a></p>
+{% endblock %}

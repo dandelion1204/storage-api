@@ -89,10 +89,10 @@ WSGI_APPLICATION = 'storage.wsgi.application'
 
 DATABASES = {
     'default': {
-#        'ENGINE': 'django.db.backends.sqlite3',
-#        'NAME': BASE_DIR / 'db.sqlite3',
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': '/app/db/db.sqlite3',  # ⬅ SQLite 資料存放在 Volume
+        'NAME': BASE_DIR / 'db.sqlite3',
+#        'ENGINE': 'django.db.backends.sqlite3',
+#        'NAME': '/app/db/db.sqlite3',  # ⬅ SQLite 資料存放在 Volume
     }
 }
 

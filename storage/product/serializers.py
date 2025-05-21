@@ -1,8 +1,8 @@
 from rest_framework import serializers
-from core.models import Product, Ingredient, ProductIngredients
+from core.models import Product, Ingredient, ProductIngredients, IngredientLot
 from django.db import transaction
 from decimal import Decimal
-
+from django.db.models import Sum
 
 
 class ProductIngredientSerializer(serializers.ModelSerializer):
@@ -13,9 +13,6 @@ class ProductIngredientSerializer(serializers.ModelSerializer):
         fields = ['id', 'product', 'ingredient', 'ingredient_name', 'quantity', 'unit']
 
     def update(self, instance, validated_data):
-        # 你原有的更新邏輯
-
-        # 在返回前刪除數量為 0 的 ingredients
         ingredients_data = validated_data.get('ingredients', [])
         for ingredient_data in ingredients_data:
             if Decimal(ingredient_data.get('quantity', 0)) == 0:
@@ -32,7 +29,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id','title','item_num','quantity',]
+        fields = ['id','title','item_num']
         extra_kwargs = {
             'title': {'required': False},
             'item_num': {'required': False}
@@ -48,10 +45,8 @@ class ProductDetailSerializer(ProductSerializer):
 
 
     def create(self, validated_data):
-        # 分離 ingredients 資料
         ingredients_data = validated_data.pop('productingredients_set', [])
 
-        # 創建主產品對象
         with transaction.atomic():
             product = super().create(validated_data)
 
@@ -113,18 +108,36 @@ class ProductDetailSerializer(ProductSerializer):
         return instance
 
 class IngredientSerializer(serializers.ModelSerializer):
+    total_quantity = serializers.SerializerMethodField()
 
     class Meta:
         model = Ingredient
-        fields = ['id', 'name', 'item_num', 'quantity']
+        fields = ['id', 'name', 'item_num', 'total_quantity']
+        #fields = ['id', 'name', 'item_num']
         read_only_fields = ['id']
 
+    def get_total_quantity(self, obj):
+        return obj.lots.aggregate(total=Sum('quantity'))['total'] or 0
 
-class IngredientDetailSerializer(IngredientSerializer):
+
+
+class IngredientLotSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = IngredientLot
+        fields = ['id', 'lot', 'quantity', 'supplier']
+        read_only_fields = ['id']
+
+class IngredientDetailSerializer(serializers.ModelSerializer):
+    lots = IngredientLotSerializer(many=True, read_only=True)
+    total_quantity = serializers.SerializerMethodField()
 
     class Meta(IngredientSerializer.Meta):
-        fields = IngredientSerializer.Meta.fields + ['lot', 'supplier']
+        fields = IngredientSerializer.Meta.fields + ['lots']
+        read_only_fields = ['id']
 
+    def get_total_quantity(self, obj):
+        return obj.lots.aggregate(total=Sum('quantity'))['total'] or 0
 
 
 

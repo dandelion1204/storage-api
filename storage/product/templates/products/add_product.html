@@ -10,7 +10,7 @@
             <form id="addProductForm">
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="title" class="form-label">Title</label>
+                        <label for="title" class="form-label">Product Name</label>
                         <input type="text" class="form-control" id="title" name="title" required>
                     </div>
                     <div class="col-md-6 mb-3">
@@ -20,10 +20,6 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="quantity" class="form-label">Quantity</label>
-                        <input type="number" class="form-control" id="quantity" name="quantity" step="0.01" required>
-                    </div>
                     <div class="col-md-6 mb-3">
                         <label for="description" class="form-label">Description</label>
                         <textarea class="form-control" id="description" name="description" rows="3"></textarea>
@@ -130,31 +126,9 @@ function submitProduct() {
     const productData = {
         title: formData.get('title'),
         item_num: formData.get('item_num'),
-        quantity: formData.get('quantity'),
-        description: formData.get('description'),
-        ingredients: [{
-            product: 0,  // 新增時預設為 0
-            ingredient: '2',
-            quantity: '99',
-            unit: 'set',
-        }]
+        description: formData.get('description')
     };
 
-
-
-    // 收集食材數據
-    /*
-    const ingredientRows = document.querySelectorAll('.ingredient-row');
-    ingredientRows.forEach((row, index) => {
-        const ingredient = {
-            product: 0,  // 新增時預設為 0
-            ingredient: row.querySelector(`[name="ingredients[${index}][ingredient]"]`).value,
-            quantity: row.querySelector(`[name="ingredients[${index}][quantity]"]`).value,
-            unit: row.querySelector(`[name="ingredients[${index}][unit]"]`).value
-        };
-        productData.ingredients.push(ingredient);
-    });
-    */
 
     // 發送 API 請求
     const token = localStorage.getItem('token');

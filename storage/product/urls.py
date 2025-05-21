@@ -5,6 +5,7 @@ from product import views
 router = DefaultRouter()
 router.register('products', views.ProductViewSet)
 router.register('ingredients', views.IngredientViewSet)
+router.register('ingredientlots', views.IngredientLotViewSet)
 
 app_name = 'product'
 

@@ -57,8 +57,11 @@ class UserAdmin(BaseUserAdmin):
 class ProductIngredientAdmin(admin.ModelAdmin):
     list_display = ('product', 'ingredient', 'quantity', 'unit')
 
+class IngredientLotAdmin(admin.ModelAdmin):
+    list_display = ('ingredient','lot', 'quantity')
 
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Product)
 admin.site.register(models.Ingredient)
 admin.site.register(models.ProductIngredients, ProductIngredientAdmin)
+admin.site.register(models.IngredientLot, IngredientLotAdmin)
