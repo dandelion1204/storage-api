@@ -30,7 +30,7 @@
                 <div id="ingredientsContainer">
                     <!-- Ingredients will be dynamically added here -->
                 </div>
-                <button type="button" class="btn btn-secondary mb-3" onclick="addIngredientRow()">
+                <button type="button" class="btn btn-primary md-3" onclick="addIngredientRow()">
                     <i class="fas fa-plus"></i> Add Ingredient
                 </button>
 
@@ -46,7 +46,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // 初始添加一個食材行
-    addIngredientRow();
+    //addIngredientRow();
 
     // 表單提交處理
     const form = document.getElementById('addProductForm');
@@ -99,10 +99,6 @@ function addIngredientRow() {
             <label>Quantity</label>
             <input type="number" class="form-control" name="ingredients[${rowIndex}][quantity]" step="0.01" required>
         </div>
-        <div class="col-md-3">
-            <label>Unit</label>
-            <input type="text" class="form-control" name="ingredients[${rowIndex}][unit]" required>
-        </div>
         <div class="col-md-2 d-flex align-items-end">
             <button type="button" class="btn btn-danger" onclick="removeIngredientRow(this)">
                 <i class="fas fa-trash"></i> Remove
@@ -117,44 +113,74 @@ function removeIngredientRow(button) {
     button.closest('.ingredient-row').remove();
 }
 
-function submitProduct() {
+async function submitProduct() {
     const form = document.getElementById('addProductForm');
     const formData = new FormData(form);
 
-    // 組裝 JSON 數據
+    const title = formData.get('title');
+    const itemNum = formData.get('item_num');
+    const description = formData.get('description');
 
     const productData = {
-        title: formData.get('title'),
-        item_num: formData.get('item_num'),
-        description: formData.get('description')
+        title,
+        item_num: itemNum,
+        description,
     };
 
-
-    // 發送 API 請求
     const token = localStorage.getItem('token');
 
-    fetch('/api/product/products/', {
-        method: 'POST',
-        headers: {
-            'Authorization': `Token ${token}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(productData)
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
+    try {
+        const productResponse = await fetch('/api/product/products/', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Token ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(productData)
+        });
+
+        if (!productResponse.ok) {
+            throw new Error('Failed to create product');
         }
-        return response.json();
-    })
-    .then(data => {
-        // 成功後跳轉到產品列表
+
+        const product = await productResponse.json();
+        const newProductId = product.id;
+
+        const ingredientRows = document.querySelectorAll('.ingredient-row');
+        for (const row of ingredientRows) {
+            const ingredientId = row.querySelector('select').value;
+            const quantity = row.querySelector('input[type="number"]').value;
+
+            if (ingredientId && quantity) {
+                const ingredientData = {
+                    product: newProductId,
+                    ingredient: parseInt(ingredientId),
+                    quantity: parseFloat(quantity)
+                };
+
+                const response = await fetch('/api/product/productingredients/', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(ingredientData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to add ingredient');
+                }
+            }
+        }
+
+        alert(`Product ${title} added successfully`);
         window.location.href = "{% url 'product_list' %}";
-    })
-    .catch(error => {
+
+    } catch (error) {
         console.error('Error:', error);
         alert('Failed to add product: ' + error.message);
-    });
+    }
 }
+
 </script>
 {% endblock %}

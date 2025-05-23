@@ -28,10 +28,11 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class AuthTokenSerializer(serializers.Serializer):
-    email = serializers.EmailField()
+    email = serializers.EmailField(default='user1@example.com')
     password = serializers.CharField(
         style={'input_style':'password'},
         trim_whitespace=False,
+        default='testpass123'
     )
 
     def validate(self, attrs):

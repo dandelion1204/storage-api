@@ -28,11 +28,11 @@
             const ingredientDetail = document.getElementById('ingredientDetail');
 
             let lotsHtml = ingredient.lots.map(lot => `
-              <tr>
-                <td>${lot.lot}</td>
-                <td>${lot.quantity}</td>
-                <td>${lot.supplier}</td>
-              </tr>
+                <tr>
+                    <td>${lot.lot}</td>
+                    <td>${lot.quantity}</td>
+                    <td>${lot.supplier}</td>
+                </tr>
             `).join('');
 
             ingredientDetail.innerHTML = `

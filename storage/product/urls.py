@@ -6,6 +6,7 @@ router = DefaultRouter()
 router.register('products', views.ProductViewSet)
 router.register('ingredients', views.IngredientViewSet)
 router.register('ingredientlots', views.IngredientLotViewSet)
+router.register('productingredients', views.ProductIngredientViewSet)
 
 app_name = 'product'
 

@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from product.serializers import (
                         ProductSerializer,
                         ProductDetailSerializer,
+                        ProductIngredientSerializer,
                         IngredientSerializer,
                         IngredientDetailSerializer,
                         IngredientLotSerializer
@@ -18,7 +19,7 @@ from core.models import (
                             Product,
                             Ingredient,
                             ProductIngredients,
-                            IngredientLot
+                            IngredientLot,
                         )
 from django.shortcuts import render
 from decimal import Decimal
@@ -45,20 +46,6 @@ def add_ingredient(request):
 def product_ingredient_adjust(request, pk):
     return render(request, 'products/adjust_ingredient.html', {'product_id': pk})
 
-class ProductViewSet(viewsets.ModelViewSet):
-    serializer_class = ProductDetailSerializer
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-    queryset = Product.objects.all()
-
-    def get_queryset(self):
-        return self.queryset.all().order_by('-id')
-
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return ProductSerializer
-
-        return self.serializer_class
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
@@ -117,3 +104,47 @@ class IngredientLotViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(lot)
         return Response(serializer.data)
 
+
+class ProductViewSet(viewsets.ModelViewSet):
+    serializer_class = ProductDetailSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = Product.objects.all()
+
+    def get_queryset(self):
+        return self.queryset.all().order_by('-id')
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return ProductSerializer
+
+        return self.serializer_class
+
+
+class ProductIngredientViewSet(viewsets.ModelViewSet):
+    serializer_class = ProductIngredientSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = ProductIngredients.objects.all()
+
+    def get_queryset(self):
+        return self.queryset.all().order_by('-product')
+
+    def create(self, request, *args, **kwargs):
+        data = request.data
+
+        if isinstance(data, list):
+            # 若是 list，就進行 bulk create
+            serializer = self.get_serializer(data=data, many=True)
+            serializer.is_valid(raise_exception=True)
+            self.perform_bulk_create(serializer)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            # 若是單筆就走原本邏輯
+            return super().create(request, *args, **kwargs)
+
+    def perform_bulk_create(self, serializer):
+        # 預設 .save() 會對每一筆呼叫 create()，效率比較慢
+        ProductIngredients.objects.bulk_create([
+            ProductIngredients(**item) for item in serializer.validated_data
+        ])

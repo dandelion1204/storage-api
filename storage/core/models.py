@@ -42,8 +42,6 @@ class Product(models.Model):
     title = models.CharField(max_length=255)
     item_num = models.CharField(max_length=255, unique=True)
     description = models.TextField(blank=True)
-    ingredients = models.ManyToManyField(   'Ingredient',
-                                            through='ProductIngredients')
 
     def __str__(self):
         return self.title
@@ -73,12 +71,11 @@ class IngredientLot(models.Model):
 
 
 class ProductIngredients(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    ingredient = models.ForeignKey('Ingredient', on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='ingredients')
+    ingredient = models.ForeignKey(Ingredient , on_delete=models.CASCADE)
     quantity = models.DecimalField(max_digits=6, decimal_places=0, validators=[MinValueValidator(0)])
-    unit = models.CharField(max_length=50)
 
     def __str__(self):
-        return f"{self.ingredient.name}: {self.quantity} {self.unit}"
+        return f"{self.product.title} - {self.ingredient.name}: {self.quantity}"
 
 

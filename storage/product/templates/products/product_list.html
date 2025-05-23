@@ -2,13 +2,23 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container mt-4">
-    <h2>Product List</h2>
-    <a href="{% url 'add_product' %}" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Add New Product
-    </a>
-    <div id="productList" class="row">
-        <!-- Products will be displayed here -->
+    <div class="d-flex justify-content-between">
+        <h2>Product List</h2>
+        <a href="{% url 'add_product' %}" class="btn btn-primary mb-2">
+            <i class="fas fa-plus"></i> Add New Product
+        </a>
     </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Item Number</th>
+                <th scope="col">Quantity</th>
+                <th scope="col">Action</th>
+            </tr>
+        </thead>
+        <tbody id="productList"></tbody>
+    </table>
 </div>
 
 <script>
@@ -32,19 +42,22 @@ document.addEventListener('DOMContentLoaded', function() {
     .then(products => {
         const productList = document.getElementById('productList');
         products.forEach(product => {
-            const productCard = document.createElement('div');
-            productCard.className = 'col-md-4 mb-4';
+            const productCard = document.createElement('tr');
             productCard.innerHTML = `
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">${product.title}</h5>
-                        <p class="card-text">ItemNumber: ${product.item_num}</p>
-                        <p class="card-text">Quantity: ${product.quantity}</p>
-                        <button class="btn btn-primary" onclick="viewDetails(${product.id})">
+                    <td>
+                        <p>${product.title}</p>
+                    </td>
+                    <td>
+                        <p>${product.item_num}</p>
+                    </td>
+                    <td>
+                        <p>${product.quantity}</p>
+                    </td>
+                    <td>
+                        <button class="btn btn-outline-success" onclick="viewDetails(${product.id})">
                             View Details
                         </button>
-                    </div>
-                </div>
+                    </td>
             `;
             productList.appendChild(productCard);
         });

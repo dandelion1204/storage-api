@@ -55,7 +55,7 @@ class UserAdmin(BaseUserAdmin):
 
 
 class ProductIngredientAdmin(admin.ModelAdmin):
-    list_display = ('product', 'ingredient', 'quantity', 'unit')
+    list_display = ('product', 'ingredient', 'quantity')
 
 class IngredientLotAdmin(admin.ModelAdmin):
     list_display = ('ingredient','lot', 'quantity')
